@@ -8,7 +8,7 @@ module.exports = class Serv {
 
         this.wss;
 
-        this.adminPass = "2424";
+        this.adminPass = "shotgunboy";
 
         this.count = 0;
 
