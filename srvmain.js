@@ -46,7 +46,7 @@ module.exports = class Serv {
                   },
                   "rotation": {
                     "x": 0,
-                    "y": 89.00561208665917,
+                    "y": 60.00561208665917,
                     "z": 0
                   }
                 }
