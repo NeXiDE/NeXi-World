@@ -50,7 +50,7 @@ module.exports = class Serv {
                     "z": 0
                   }
                 }
-              ]>
+              ]
             }
 
         this.amaps = Object.keys(this.spawns);
@@ -311,7 +311,7 @@ module.exports = class Serv {
                 
         //spawn lol
         broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
-            distanceScore: 256,
+            distanceScore: 0,
             ...(mapSpawns[Math.random() * mapSpawns.length | 0]),
             x: 0,
             y: 0,
