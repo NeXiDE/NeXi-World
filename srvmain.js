@@ -90,7 +90,7 @@ module.exports = class Serv {
                 ws.send("mode", "POINT", this.map);
                 
                 //spawn
-//                 this.setspawn(broadcast, ws.id);
+                this.setspawn(broadcast, ws.id);
                 // new Ac(ws, this.players[name], (w, reason)=> {
                 //     let player = this.getPlayer(w.id);
                 //     if (!w.admin && player) {
@@ -107,10 +107,10 @@ module.exports = class Serv {
                 ws.send("character", ...msg.slice(1));
             },
             respawn: (ws, emit, msg, broadcast) => {
-                ws.send("h", ws.id, 100);
-                let plr = this.getPlayer(ws.id);
-                if (plr) plr.health = 100;
-                this.setspawn(broadcast, ws.id);
+//                 ws.send("h", ws.id, 100);
+//                 let plr = this.getPlayer(ws.id);
+//                 if (plr) plr.health = 100;
+//                 this.setspawn(broadcast, ws.id);
             },
             weapon: (ws, emit, msg) => {
                 let player = this.getPlayer(ws.id);
@@ -151,7 +151,7 @@ module.exports = class Serv {
                             isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
-                                    this.damage(w.id, player.playerId, 100, true, emit)
+                                    this.damage(w.id, player.playerId, 100, true, emit);
                                 } else {
                                     clog("Player does not exist");
                                 }
@@ -238,8 +238,8 @@ module.exports = class Serv {
                     }
                 })
             },
-            da: (ws, _, msg, emit) => {
-                this.damagePacket(ws, msg, emit)
+            da: (ws, _, msg, emit, bc) => {
+                this.damagePacket(ws, msg, emit. bc)
             },
             p: (ws, emit, msg, bc) => {
                 let info = [...msg.slice(1)],
@@ -300,7 +300,7 @@ module.exports = class Serv {
         
         //spawn lol
         broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
-            distanceScore: 0,
+            distanceScore: Math.random() * 10 | 0,
             ...sdata,
             x: 0,
             y: 0,
@@ -362,16 +362,16 @@ module.exports = class Serv {
         let pckt = ['d', attacked, damage, headshot]
         this.damagePacket({
             id: attacker
-        }, pckt, emit)
+        }, pckt, emit, emit) // bad
     }
 
-    damagePacket(ws, msg, emit) {
+    damagePacket(ws, msg, emit, bc) {
         let info = [...msg.slice(1)],
             iOb = {
                 damage: info[1] + (info[3] ? 5 : 0), //if its a head shot add 5 damage
                 killer: ws.id,
                 killed: info[0],
-                reason: 'big gay' //light hearted ;)
+                reason: 'yes'
             },
             dPlayer = this.getPlayer(iOb.killed),
             kPlayer = this.getPlayer(iOb.killer);
@@ -414,11 +414,12 @@ module.exports = class Serv {
             setTimeout(() => {
                 dPlayer.health = 100;
                 emit('h', iOb.killed, dPlayer.health)
-                emit("respawn", iOb.killed, {
-                    distanceScore: 256,
-                    position: dPlayer.lastPos.map(e=>e/5).vector(),
-                    rotation: [0, 89, 0].vector()
-                })
+//                 emit("respawn", iOb.killed, {
+//                     distanceScore: 256,
+//                     position: dPlayer.lastPos.map(e=>e/5).vector(),
+//                     rotation: [0, 89, 0].vector()
+//                 })
+               this.setspawn(bc, iOb.killed);
             }, 4e3)
         }
     }
@@ -459,13 +460,14 @@ module.exports = class Serv {
 
     startGame(emit) {
         setInterval(() => {
+            var plist = this.getPList();
             //time
             if (this.time == this.maxTime) {
                 emit('start');
             }
 
             if (!(this.time % 30)) {
-                let iPoints = this.getPList().filter(e => e.inPoint).forEach(player => {
+                let iPoints = plist.filter(e => e.inPoint).forEach(player => {
                     let aScore = 30;
                     player.score += aScore;
                     player.totalCardPoint += aScore;
@@ -484,7 +486,7 @@ module.exports = class Serv {
             }
 
             if (this.time == 0) {
-                let end = this.getPList().sort((a, b) => b.kill - a.kill);
+                let end = plist.sort((a, b) => b.kill - a.kill);
 
                 emit('finish', end);
 
@@ -512,21 +514,21 @@ module.exports = class Serv {
                     }
 
                     //set the keys
-                    this.getPList().forEach(player => {
+                    plist.forEach(player => {
                         Object.keys(rObj).forEach(e => {
                             player[e] = rObj[e];
                         })
                     })
 
                     this.map = Object.entries(this.votes).sort((a,b)=> b[1] - a[1])[0][0];
-                    emit("mode", "POINT", this.map)
+                    emit("mode", "POINT", this.map);
+                    
+                    plist.forEach(player=>{
+                        this.setspawn(emit, player.id);
+                    })
 
-                    this.votes = {
-                        Sierra: 0,
-                        Xibalba: 0,
-                        Mistle: 0,
-                        Tundra: 0
-                    };
+                    this.votes = Object.fromEntries(this.amaps.map(e=>[e,0]));
+                    
                     this.time = this.maxTime;
                 }, 20e3)
             }
