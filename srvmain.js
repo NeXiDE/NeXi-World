@@ -87,7 +87,7 @@ module.exports = class Serv {
                 ws.send('me', this.players[name]);
                 this.players.list.forEach(e => ws.send('player', this.players[e]));
                 emit('player', this.players[name]);
-                ws.send("mode", "POINT", this.map);
+                ws.send("mode", "GUNGAME", this.map);
                 
                 //spawn
                 this.setspawn(broadcast, ws.id);
