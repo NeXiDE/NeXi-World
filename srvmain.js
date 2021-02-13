@@ -515,7 +515,7 @@ module.exports = class Serv {
                     })
 
                     this.map = Object.entries(this.votes).sort((a,b)=> b[1] - a[1])[0][0];
-                    emit("mode", "POINT", this.map)
+                    emit("mode", "GUNGAME", this.map)
 
                     this.votes = {
                         Sierra: 0,
