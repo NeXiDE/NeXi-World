@@ -87,7 +87,7 @@ module.exports = class Serv {
                 ws.send('me', this.players[name]);
                 this.players.list.forEach(e => ws.send('player', this.players[e]));
                 emit('player', this.players[name]);
-                ws.send("mode", "GUNGAME", this.map);
+                ws.send("mode", "POINT", this.map);
                 
                 //spawn
                 this.setspawn(broadcast, ws.id);
@@ -515,13 +515,14 @@ module.exports = class Serv {
                     })
 
                     this.map = Object.entries(this.votes).sort((a,b)=> b[1] - a[1])[0][0];
-                    emit("mode", "GUNGAME", this.map)
+                    emit("mode", "POINT", this.map)
 
                     this.votes = {
                         Sierra: 0,
                         Xibalba: 0,
                         Mistle: 0,
-                        Tundra: 0
+                        Tundra: 0,
+                        Temple: 0,
                     };
                     this.time = this.maxTime;
                 }, 20e3)
