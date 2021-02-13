@@ -151,7 +151,7 @@ module.exports = class Serv {
                             isAdmin(w, ()=>{
                                 let player = this.findPlayer(args[1]);
                                 if (player) {
-                                    this.damage(w.id, player.playerId, 100, true, emit);
+                                    this.damage(w.id, player.playerId, 100, true, emit)
                                 } else {
                                     clog("Player does not exist");
                                 }
@@ -238,16 +238,16 @@ module.exports = class Serv {
                     }
                 })
             },
-            da: (ws, _, msg, emit, bc) => {
-                this.damagePacket(ws, msg, emit. bc)
+            da: (ws, _, msg, emit) => {
+                this.damagePacket(ws, msg, emit)
             },
-            p: (ws, emit, msg, bc) => {
+            p: (ws, emit, msg) => {
                 let info = [...msg.slice(1)],
                     author = this.getPlayer(ws.id);
                 if (author) {
                     author.lastPos = info.slice(0, 3);
                 }
-                bc('p', ws.id, ...info);
+                emit('p', ws.id, ...info);
             },
             e: (ws, emit, msg) => {
                 emit('e', ws.id, ...msg.slice(1));
@@ -292,16 +292,12 @@ module.exports = class Serv {
     }
     
     setspawn(broadcast, id){
-        var mapSpawns = this.spawns[this.map],
-            author = this.getPlayer(id),
-            sdata = mapSpawns[Math.random() * mapSpawns.length | 0];
-        
-        author.lastPos = sdata.position;
-        
+        var mapSpawns = this.spawns[this.map];
+                
         //spawn lol
         broadcast("respawn", id, { //keep in mind that they are multple spawns. Just use a random mechanism on them
-            distanceScore: Math.random() * 10 | 0,
-            ...sdata,
+            distanceScore: 0,
+            ...(mapSpawns[Math.random() * mapSpawns.length | 0]),
             x: 0,
             y: 0,
             z: 0
@@ -362,16 +358,16 @@ module.exports = class Serv {
         let pckt = ['d', attacked, damage, headshot]
         this.damagePacket({
             id: attacker
-        }, pckt, emit, emit) // bad
+        }, pckt, emit)
     }
 
-    damagePacket(ws, msg, emit, bc) {
+    damagePacket(ws, msg, emit) {
         let info = [...msg.slice(1)],
             iOb = {
                 damage: info[1] + (info[3] ? 5 : 0), //if its a head shot add 5 damage
                 killer: ws.id,
                 killed: info[0],
-                reason: 'yes'
+                reason: 'big gay' //light hearted ;)
             },
             dPlayer = this.getPlayer(iOb.killed),
             kPlayer = this.getPlayer(iOb.killer);
@@ -414,12 +410,11 @@ module.exports = class Serv {
             setTimeout(() => {
                 dPlayer.health = 100;
                 emit('h', iOb.killed, dPlayer.health)
-//                 emit("respawn", iOb.killed, {
-//                     distanceScore: 256,
-//                     position: dPlayer.lastPos.map(e=>e/5).vector(),
-//                     rotation: [0, 89, 0].vector()
-//                 })
-               this.setspawn(bc, iOb.killed);
+                emit("respawn", iOb.killed, {
+                    distanceScore: 256,
+                    position: dPlayer.lastPos.map(e=>e/5).vector(),
+                    rotation: [0, 89, 0].vector()
+                })
             }, 4e3)
         }
     }
